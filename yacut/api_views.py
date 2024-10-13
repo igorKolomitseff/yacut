@@ -30,10 +30,10 @@ def add_short_id():
 
 @app.route('/api/id/<string:short_id>/', methods=['GET'])
 def get_original_link(short_id):
-    url_map = URLMap.query.filter_by(short=short_id).first()
-    if url_map is None:
+    urlmap = URLMap.query.filter_by(short=short_id).first()
+    if urlmap is None:
         raise InvalidAPIUsage(
             SHORT_ID_IS_NOT_EXISTING,
             HTTPStatus.NOT_FOUND
         )
-    return jsonify({'url': url_map.original}), HTTPStatus.OK
+    return jsonify({'url': urlmap.original}), HTTPStatus.OK
