@@ -23,7 +23,7 @@ SHORT_ID_IS_EXISTING = (
 INCORRECT_SHORT_ID = 'Указано недопустимое имя для короткой ссылки'
 
 
-def validate_data_for_add_short_link(data):
+def validate_data_for_add_short_id(data):
     if data is None:
         raise InvalidAPIUsage(REQUEST_BODY_IS_MISSING)
     if 'url' not in data:
