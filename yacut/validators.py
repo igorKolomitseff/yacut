@@ -39,14 +39,14 @@ def validate_data_for_add_short_id(data):
     if not original_url_parsed.scheme and not original_url_parsed.netloc:
         raise InvalidAPIUsage(INCORRECT_ORIGINAL_LINK)
 
-    if 'custom_id' not in data:
+    if not data.get('custom_id'):
         return data
     custom_id = data['custom_id']
     if is_short_id_present(custom_id):
         raise InvalidAPIUsage(SHORT_ID_IS_EXISTING)
     if (
         len(custom_id) > SHORT_ID_BY_USER_MAX_LENGTH
-        or not fullmatch('^[A-Za-z0-9]*$', custom_id)
+        or not fullmatch('^[A-Za-z0-9]+$', custom_id)
     ):
         raise InvalidAPIUsage(INCORRECT_SHORT_ID)
     return data
