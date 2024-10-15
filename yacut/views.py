@@ -2,6 +2,7 @@ from flask import flash, render_template, redirect, request
 
 from . import app, db
 
+from settings import SHORT_ID_BY_FUNCTION_MAX_LENGTH
 from .forms import URLMapForm
 from .models import URLMap
 from .utils import get_unique_short_id, is_short_id_present
@@ -20,7 +21,9 @@ def index_view():
         if short_id and is_short_id_present(short_id):
             flash(SHORT_ID_IS_EXISTING)
             return render_template('yacut.html', form=form)
-        short_id = short_id or get_unique_short_id()
+        short_id = short_id or get_unique_short_id(
+            SHORT_ID_BY_FUNCTION_MAX_LENGTH
+        )
         urlmap = URLMap(
             original=form.original_link.data,
             short=short_id

@@ -8,9 +8,9 @@ from settings import (
     STRING_MIN_LENGTH
 )
 
-REQUIRED_FIELD_ERROR_MESSAGE = 'Обязательное поле'
-INVALID_LINK_ERROR_MESSAGE = 'Некорректная ссылка'
-INCORRECT_SHORT_LINK = (
+REQUIRED_FIELD = 'Обязательное поле'
+INVALID_ORIGINAL_LINK = 'Некорректная оригинальная ссылка'
+INVALID_SHORT_LINK = (
     'Некорректная короткая ссылка. Допустимы только латинские буквы '
     '(верхнего и нижнего регистра) и цифры (0 - 9).'
 )
@@ -20,12 +20,12 @@ class URLMapForm(FlaskForm):
     original_link = URLField(
         'Длинная ссылка',
         validators=(
-            DataRequired(message=REQUIRED_FIELD_ERROR_MESSAGE),
+            DataRequired(message=REQUIRED_FIELD),
             Length(
                 min=STRING_MIN_LENGTH,
                 max=ORIGINAL_URL_MAX_LENGTH,
             ),
-            URL(message=INVALID_LINK_ERROR_MESSAGE)
+            URL(message=INVALID_ORIGINAL_LINK)
         )
     )
     custom_id = StringField(
@@ -37,7 +37,7 @@ class URLMapForm(FlaskForm):
             ),
             Regexp(
                 '^[A-Za-z0-9]+$',
-                message=INCORRECT_SHORT_LINK
+                message=INVALID_SHORT_LINK
             ),
             Optional()
         )

@@ -16,11 +16,11 @@ INVALID_ORIGINAL_URL_LENGTH = (
     f'Значение должно быть в пределах от {STRING_MIN_LENGTH} до '
     f'{ORIGINAL_URL_MAX_LENGTH} символов'
 )
-INCORRECT_ORIGINAL_LINK = 'Указана недопустимая оригинальная ссылка'
+INVALID_ORIGINAL_LINK = 'Указана недопустимая оригинальная ссылка'
 SHORT_ID_IS_EXISTING = (
     'Предложенный вариант короткой ссылки уже существует.'
 )
-INCORRECT_SHORT_ID = 'Указано недопустимое имя для короткой ссылки'
+INVALID_SHORT_ID = 'Указано недопустимое имя для короткой ссылки'
 
 
 def validate_data_for_add_short_id(data):
@@ -37,7 +37,7 @@ def validate_data_for_add_short_id(data):
         raise InvalidAPIUsage(INVALID_ORIGINAL_URL_LENGTH)
     original_url_parsed = urlparse(original_url)
     if not original_url_parsed.scheme and not original_url_parsed.netloc:
-        raise InvalidAPIUsage(INCORRECT_ORIGINAL_LINK)
+        raise InvalidAPIUsage(INVALID_ORIGINAL_LINK)
 
     if not data.get('custom_id'):
         return data
@@ -48,5 +48,5 @@ def validate_data_for_add_short_id(data):
         len(custom_id) > SHORT_ID_BY_USER_MAX_LENGTH
         or not fullmatch('^[A-Za-z0-9]+$', custom_id)
     ):
-        raise InvalidAPIUsage(INCORRECT_SHORT_ID)
+        raise InvalidAPIUsage(INVALID_SHORT_ID)
     return data
