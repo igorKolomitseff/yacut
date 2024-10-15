@@ -22,15 +22,13 @@
                     placeholder=form.original_link.label.text
                   ) }}
                 </div>
-                {% if form.original_link.errors %}
-                  <p>
-                    <span style="color:red">
-                      {% for error in form.original_link.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </span>
-                  </p>
-                {% endif %}
+                <p>
+                  <span style="color:red">
+                    {% for error in form.original_link.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </span>
+                </p>
                 <div>
                   {{ form.custom_id(
                     type="url",
@@ -40,15 +38,13 @@
                   ) }}
                   {{ form.submit(class="btn btn-primary") }}
                 </div>
-                {% if form.custom_id.errors %}
-                  <p>
-                    <span style="color:red">
-                      {% for error in form.custom_id.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </span>
-                  </p>
-                {% endif %}
+                <p>
+                  <span style="color:red">
+                    {% for error in form.custom_id.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </span>
+                </p>
               </div>
             </form>
           </div>
@@ -72,17 +68,15 @@
               </p>
             {% endif %}
             {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="text-center">
-                  <p>
-                    <span style="color:red">
-                      {% for message in messages %}
-                        {{ message }}
-                      {% endfor %}
-                    </span>
-                  </p>
-                </div>
-              {% endif %}
+              <div class="text-center">
+                <p>
+                  <span style="color:red">
+                    {% for message in messages %}
+                      {{ message }}
+                    {% endfor %}
+                  </span>
+                </p>
+              </div>
             {% endwith %}
           </div>
           <div class="col-sm">
