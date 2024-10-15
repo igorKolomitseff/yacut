@@ -38,7 +38,7 @@ def index_view():
 
 
 @app.route('/<string:short_id>')
-def short_url_redirect(short_id):
+def short_url_redirect_view(short_id):
     return redirect(
         URLMap.query.filter_by(short=short_id).first_or_404().original
     )
