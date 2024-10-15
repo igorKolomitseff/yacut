@@ -20,7 +20,7 @@ def index_view():
         short_id = form.custom_id.data
         if short_id and is_short_id_present(short_id):
             flash(SHORT_ID_IS_EXISTING)
-            return render_template('yacut.html', form=form)
+            return render_template('index.html', form=form)
         short_id = short_id or get_unique_short_id(
             SHORT_ID_BY_FUNCTION_MAX_LENGTH
         )
@@ -30,11 +30,11 @@ def index_view():
         )
         db.session.add(urlmap)
         db.session.commit()
-        return render_template('yacut.html', **{
+        return render_template('index.html', **{
             'form': form,
             'short_url': f'{request.root_url}{short_id}'
         })
-    return render_template('yacut.html', form=form)
+    return render_template('index.html', form=form)
 
 
 @app.route('/<string:short_id>')
