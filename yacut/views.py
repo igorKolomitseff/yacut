@@ -1,14 +1,15 @@
-from flask import flash, render_template, redirect, request
+from http import HTTPStatus
 
-from . import app, db
+from flask import abort, flash, render_template, redirect
 
-from settings import SHORT_ID_BY_FUNCTION_MAX_LENGTH
+from . import app
+
+from .error_handlers import ShortGenerateError
 from .forms import URLMapForm
 from .models import URLMap
-from .utils import get_unique_short_id, is_short_id_present
 
 
-SHORT_ID_IS_EXISTING = (
+SHORT_IS_EXISTING = (
     'Предложенный вариант короткой ссылки уже существует.'
 )
 
@@ -17,28 +18,23 @@ SHORT_ID_IS_EXISTING = (
 def index_view():
     form = URLMapForm()
     if form.validate_on_submit():
-        short_id = form.custom_id.data
-        if short_id and is_short_id_present(short_id):
-            flash(SHORT_ID_IS_EXISTING)
-            return render_template('index.html', form=form)
-        short_id = short_id or get_unique_short_id(
-            SHORT_ID_BY_FUNCTION_MAX_LENGTH
-        )
-        urlmap = URLMap(
-            original=form.original_link.data,
-            short=short_id
-        )
-        db.session.add(urlmap)
-        db.session.commit()
-        return render_template('index.html', **{
-            'form': form,
-            'short_url': f'{request.root_url}{short_id}'
-        })
+        try:
+            urlmap = URLMap.create(
+                original=form.original_link.data,
+                short=form.custom_id.data
+            )
+            return render_template('index.html', **{
+                'form': form,
+                'short_url': urlmap.get_short_link()
+            })
+        except ShortGenerateError as error:
+            flash(str(error))
     return render_template('index.html', form=form)
 
 
-@app.route('/<string:short_id>')
-def short_url_redirect_view(short_id):
-    return redirect(
-        URLMap.query.filter_by(short=short_id).first_or_404().original
-    )
+@app.route('/<string:short>')
+def redirect_from_short_view(short):
+    urlmap = URLMap.get_by_short(short)
+    if not urlmap:
+        abort(HTTPStatus.NOT_FOUND)
+    return redirect(urlmap.original)

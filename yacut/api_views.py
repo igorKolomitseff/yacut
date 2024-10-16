@@ -2,37 +2,41 @@ from http import HTTPStatus
 
 from flask import jsonify, request
 
-from settings import SHORT_ID_BY_FUNCTION_MAX_LENGTH
-from . import app, db
-from .validators import validate_data_for_add_short_id
-from .error_handlers import InvalidAPIUsage
+from . import app
+from .error_handlers import InvalidAPIUsage, ShortGenerateError
 from .models import URLMap
-from .utils import get_unique_short_id
 
-DATA_FIELDS_FOR_ADD_SHORT_ID = ('url', 'custom_id')
-SHORT_ID_IS_NOT_EXISTING = 'Указанный id не найден'
+REQUEST_BODY_IS_MISSING = 'Отсутствует тело запроса'
+URL_FIELD_IS_MISSING = '"url" является обязательным полем!'
+SHORT_IS_NOT_EXISTING = 'Указанный id не найден'
 
 
 @app.route('/api/id/', methods=['POST'])
-def add_short_id():
-    data = validate_data_for_add_short_id(request.get_json(silent=True))
-    data['custom_id'] = (
-        data.get('custom_id')
-        or get_unique_short_id(SHORT_ID_BY_FUNCTION_MAX_LENGTH)
-    )
-    urlmap = URLMap()
-    urlmap.from_dict(data, DATA_FIELDS_FOR_ADD_SHORT_ID)
-    db.session.add(urlmap)
-    db.session.commit()
-    return jsonify(urlmap.to_dict(request.root_url)), HTTPStatus.CREATED
+def add_short():
+    data = request.get_json(silent=True)
+    if data is None:
+        raise InvalidAPIUsage(REQUEST_BODY_IS_MISSING)
+    if 'url' not in data:
+        raise InvalidAPIUsage(URL_FIELD_IS_MISSING)
+    original = data['url']
+    short = data.get('custom_id')
+    if URLMap.is_original_valid(original) and URLMap.is_short_valid(short):
+        try:
+            urlmap = URLMap.create(original=original, short=short)
+            return (
+                jsonify(urlmap.to_dict('redirect_from_short_view')),
+                HTTPStatus.CREATED
+            )
+        except ShortGenerateError as error:
+            raise InvalidAPIUsage(str(error))
 
 
-@app.route('/api/id/<string:short_id>/', methods=['GET'])
-def get_original_link(short_id):
-    urlmap = URLMap.query.filter_by(short=short_id).first()
+@app.route('/api/id/<string:short>/', methods=['GET'])
+def get_original(short):
+    urlmap = URLMap.get_by_short(short)
     if urlmap is None:
         raise InvalidAPIUsage(
-            SHORT_ID_IS_NOT_EXISTING,
+            SHORT_IS_NOT_EXISTING,
             HTTPStatus.NOT_FOUND
         )
     return jsonify({'url': urlmap.original}), HTTPStatus.OK
