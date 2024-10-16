@@ -23,10 +23,7 @@ def add_short():
     if URLMap.is_original_valid(original) and URLMap.is_short_valid(short):
         try:
             urlmap = URLMap.create(original=original, short=short)
-            return (
-                jsonify(urlmap.to_dict('redirect_from_short_view')),
-                HTTPStatus.CREATED
-            )
+            return (jsonify(urlmap.to_dict()), HTTPStatus.CREATED)
         except ShortGenerateError as error:
             raise InvalidAPIUsage(str(error))
 
