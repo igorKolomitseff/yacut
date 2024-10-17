@@ -48,7 +48,7 @@ flask run
 
 ## Документация API
 
-[Техническая документация к API](openapi.yml)
+[Техническая документация к API](https://github.com/igorKolomitseff/yacut/blob/master/openapi.yml)
 
 ### Автор
 
