@@ -17,14 +17,14 @@ from settings import (
 from . import db
 from .error_handlers import InvalidAPIUsage, ShortGenerateError
 
-SHORT_DO_NOT_CREATED = 'Короткая ссылка не была создана'
-SHORT_IS_EXISTING = (
+SHORT_NOT_CREATED = 'Короткая ссылка не была создана'
+SHORT_EXISTS = (
     'Предложенный вариант короткой ссылки уже существует.'
 )
 INVALID_ORIGINAL_LENGTH = (
     'Указана оригинальная ссылка, превышающая допустимую длину'
 )
-INVALID_ORIGINAL = 'Указано недопустимое имя для оригинальной ссылки'
+INVALID_ORIGINAL = 'Указана недопустимая оригинальная ссылка'
 INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
 
 
@@ -68,7 +68,7 @@ class URLMap(db.Model):
             ))
             if not URLMap.is_short_exist(short):
                 return short
-        raise ShortGenerateError(SHORT_DO_NOT_CREATED)
+        raise ShortGenerateError(SHORT_NOT_CREATED)
 
     @staticmethod
     def create(original, short):
@@ -92,7 +92,7 @@ class URLMap(db.Model):
         if not short:
             return True
         if URLMap.is_short_exist(short):
-            raise InvalidAPIUsage(SHORT_IS_EXISTING)
+            raise InvalidAPIUsage(SHORT_EXISTS)
         if (
             len(short) > SHORT_BY_USER_MAX_LENGTH
             or not fullmatch(VALID_CHARACTERS_FOR_SHORT_REGEXP, short)

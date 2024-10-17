@@ -20,7 +20,7 @@ INVALID_SHORT = (
     'Некорректная короткая ссылка. Допустимы только латинские буквы '
     '(верхнего и нижнего регистра) и цифры (0 - 9).'
 )
-SHORT_IS_EXISTING = (
+SHORT_EXISTS = (
     'Предложенный вариант короткой ссылки уже существует.'
 )
 
@@ -49,4 +49,4 @@ class URLMapForm(FlaskForm):
 
     def validate_custom_id(form, field):
         if URLMap.is_short_exist(field.data):
-            raise ValidationError(SHORT_IS_EXISTING)
+            raise ValidationError(SHORT_EXISTS)

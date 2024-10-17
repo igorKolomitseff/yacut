@@ -1,17 +1,12 @@
 from http import HTTPStatus
 
-from flask import abort, flash, render_template, redirect
+from flask import abort, flash, redirect, render_template
 
 from . import app
 
 from .error_handlers import ShortGenerateError
 from .forms import URLMapForm
 from .models import URLMap
-
-
-SHORT_IS_EXISTING = (
-    'Предложенный вариант короткой ссылки уже существует.'
-)
 
 
 @app.route('/', methods=['GET', 'POST'])

@@ -8,7 +8,7 @@ from .models import URLMap
 
 REQUEST_BODY_IS_MISSING = 'Отсутствует тело запроса'
 URL_FIELD_IS_MISSING = '"url" является обязательным полем!'
-SHORT_IS_NOT_EXISTING = 'Указанный id не найден'
+SHORT_DOES_NOT_EXIST = 'Указанный id не найден'
 
 
 @app.route('/api/id/', methods=['POST'])
@@ -32,8 +32,5 @@ def add_short():
 def get_original(short):
     urlmap = URLMap.get_by_short(short)
     if urlmap is None:
-        raise InvalidAPIUsage(
-            SHORT_IS_NOT_EXISTING,
-            HTTPStatus.NOT_FOUND
-        )
+        raise InvalidAPIUsage(SHORT_DOES_NOT_EXIST, HTTPStatus.NOT_FOUND)
     return jsonify({'url': urlmap.original}), HTTPStatus.OK
