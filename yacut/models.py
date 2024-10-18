@@ -1,7 +1,6 @@
 from datetime import datetime
 from random import choices
 from re import fullmatch
-from urllib.parse import urlparse
 
 from flask import url_for
 
@@ -15,16 +14,18 @@ from settings import (
     SHORT_GENERATIONS_LIMIT
 )
 from . import db
-from .error_handlers import InvalidAPIUsage, ShortGenerateError
 
-SHORT_NOT_CREATED = 'Короткая ссылка не была создана'
+SHORT_NOT_CREATED = (
+    'Короткая ссылка не была создана. '
+    f'Количество попыток: {SHORT_GENERATIONS_LIMIT}'
+)
 SHORT_EXISTS = (
     'Предложенный вариант короткой ссылки уже существует.'
 )
 INVALID_ORIGINAL_LENGTH = (
-    'Указана оригинальная ссылка, превышающая допустимую длину'
+    'Указана оригинальная ссылка, превышающая допустимую длину: '
+    f'{ORIGINAL_MAX_LENGTH}'
 )
-INVALID_ORIGINAL = 'Указана недопустимая оригинальная ссылка'
 INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
 
 
@@ -37,6 +38,12 @@ class URLMap(db.Model):
         nullable=False
     )
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now)
+
+    class ShortGenerateError(Exception):
+        pass
+
+    class ValidationError(Exception):
+        pass
 
     def to_dict(self):
         return dict(
@@ -52,12 +59,8 @@ class URLMap(db.Model):
         )
 
     @staticmethod
-    def get_by_short(short):
+    def get(short):
         return URLMap.query.filter_by(short=short).first()
-
-    @staticmethod
-    def is_short_exist(short):
-        return URLMap.get_by_short(short) is not None
 
     @staticmethod
     def get_unique_short():
@@ -66,36 +69,24 @@ class URLMap(db.Model):
                 VALID_CHARACTERS_FOR_SHORT,
                 k=SHORT_BY_FUNCTION_MAX_LENGTH
             ))
-            if not URLMap.is_short_exist(short):
+            if URLMap.get(short) is None:
                 return short
-        raise ShortGenerateError(SHORT_NOT_CREATED)
+        raise URLMap.ShortGenerateError(SHORT_NOT_CREATED)
 
     @staticmethod
-    def create(original, short):
+    def create(original, short, from_form=False):
+        if not from_form:
+            if len(original) > ORIGINAL_MAX_LENGTH:
+                raise URLMap.ValidationError(INVALID_ORIGINAL_LENGTH)
+            if (short and (
+                len(short) > SHORT_BY_USER_MAX_LENGTH
+                or not fullmatch(VALID_CHARACTERS_FOR_SHORT_REGEXP, short)
+            )):
+                raise URLMap.ValidationError(INVALID_SHORT)
+            if short and URLMap.get(short) is not None:
+                raise URLMap.ValidationError(SHORT_EXISTS)
         short = short or URLMap.get_unique_short()
-        urlmap = URLMap(original=original, short=short)
-        db.session.add(urlmap)
+        url_map = URLMap(original=original, short=short)
+        db.session.add(url_map)
         db.session.commit()
-        return urlmap
-
-    @staticmethod
-    def is_original_valid(original):
-        if len(original) > ORIGINAL_MAX_LENGTH:
-            raise InvalidAPIUsage(INVALID_ORIGINAL_LENGTH)
-        original_url_parsed = urlparse(original)
-        if not original_url_parsed.scheme and not original_url_parsed.netloc:
-            raise InvalidAPIUsage(INVALID_ORIGINAL)
-        return True
-
-    @staticmethod
-    def is_short_valid(short):
-        if not short:
-            return True
-        if URLMap.is_short_exist(short):
-            raise InvalidAPIUsage(SHORT_EXISTS)
-        if (
-            len(short) > SHORT_BY_USER_MAX_LENGTH
-            or not fullmatch(VALID_CHARACTERS_FOR_SHORT_REGEXP, short)
-        ):
-            raise InvalidAPIUsage(INVALID_SHORT)
-        return True
+        return url_map

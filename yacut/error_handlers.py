@@ -5,12 +5,6 @@ from flask import jsonify, render_template
 from . import app, db
 
 
-class ShortGenerateError(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
-
-
 class InvalidAPIUsage(Exception):
     status_code = HTTPStatus.BAD_REQUEST
 

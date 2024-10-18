@@ -3,7 +3,7 @@ from http import HTTPStatus
 from flask import jsonify, request
 
 from . import app
-from .error_handlers import InvalidAPIUsage, ShortGenerateError
+from .error_handlers import InvalidAPIUsage
 from .models import URLMap
 
 REQUEST_BODY_IS_MISSING = 'Отсутствует тело запроса'
@@ -18,19 +18,18 @@ def add_short():
         raise InvalidAPIUsage(REQUEST_BODY_IS_MISSING)
     if 'url' not in data:
         raise InvalidAPIUsage(URL_FIELD_IS_MISSING)
-    original = data['url']
-    short = data.get('custom_id')
-    if URLMap.is_original_valid(original) and URLMap.is_short_valid(short):
-        try:
-            urlmap = URLMap.create(original=original, short=short)
-            return (jsonify(urlmap.to_dict()), HTTPStatus.CREATED)
-        except ShortGenerateError as error:
-            raise InvalidAPIUsage(str(error))
+    try:
+        return jsonify(URLMap.create(
+            original=data['url'],
+            short=data.get('custom_id')
+        ).to_dict()), HTTPStatus.CREATED
+    except (URLMap.ValidationError, URLMap.ShortGenerateError) as error:
+        raise InvalidAPIUsage(str(error))
 
 
 @app.route('/api/id/<string:short>/', methods=['GET'])
 def get_original(short):
-    urlmap = URLMap.get_by_short(short)
-    if urlmap is None:
+    url_map = URLMap.get(short)
+    if url_map is None:
         raise InvalidAPIUsage(SHORT_DOES_NOT_EXIST, HTTPStatus.NOT_FOUND)
-    return jsonify({'url': urlmap.original}), HTTPStatus.OK
+    return jsonify({'url': url_map.original}), HTTPStatus.OK
