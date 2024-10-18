@@ -3,9 +3,9 @@ from wtforms import StringField, SubmitField, URLField, ValidationError
 from wtforms.validators import DataRequired, Length, Optional, Regexp, URL
 
 from settings import (
-    VALID_CHARACTERS_FOR_SHORT_REGEXP,
     ORIGINAL_MAX_LENGTH,
-    SHORT_BY_USER_MAX_LENGTH
+    SHORT_BY_USER_MAX_LENGTH,
+    VALID_CHARACTERS_FOR_SHORT_REGEXP
 )
 from .models import URLMap
 
